@@ -46,35 +46,36 @@ docker-compose exec web alembic revision -m "create_tables"
 
 # 2. Ручками пишем в файле миграций лежит тут alembic/versions/
 def upgrade():
-    # Сначала создаем таблицы без внешних ключей
-    op.create_table(
-        'orders',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('customer_name', sa.String(), nullable=True),
-        # другие колонки
-        sa.PrimaryKeyConstraint('id')
-    )
-
+    # Создаём таблицу dishes
     op.create_table(
         'dishes',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('name', sa.String(), nullable=False),
-        # другие колонки
-        sa.PrimaryKeyConstraint('id')
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('name', sa.String(100), nullable=False),
+        sa.Column('description', sa.Text),
+        sa.Column('price', sa.Float(), nullable=False),
+        sa.Column('category', sa.String(50), nullable=False),
     )
 
-    # Затем таблицы с внешними ключами
+    # Создаём таблицу orders
+    op.create_table(
+        'orders',
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('customer_name', sa.String(), nullable=False),
+        sa.Column('order_time', sa.DateTime(), server_default=sa.text('now()')),
+        sa.Column('status', sa.String(), server_default='в обработке'),
+    )
+
+    # Создаём ассоциативную таблицу order_dish
     op.create_table(
         'order_dish',
-        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('order_id', sa.Integer(), sa.ForeignKey('orders.id')),
         sa.Column('dish_id', sa.Integer(), sa.ForeignKey('dishes.id')),
-        sa.PrimaryKeyConstraint('id')
     )
 
 def downgrade():
-    # В обратном порядке - сначала удаляем зависимые таблицы
+    # В обратном порядке - сначала удаляем ассоциативную таблицу
     op.drop_table('order_dish')
+    # Затем основные таблицы
     op.drop_table('dishes')
     op.drop_table('orders')
 
