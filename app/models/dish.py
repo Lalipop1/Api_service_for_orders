@@ -1,21 +1,15 @@
-from sqlalchemy import Column, Integer, String, Float, Table
+from sqlalchemy import Column, Integer, String, Float, Text
 from sqlalchemy.orm import relationship
-from app.models.base import Base
-
-order_dish_asssociation = Table (
-    'order_dish_association',
-    Base.metadata,
-    Column('order_id', Integer, ForeignKey('orders.id')),
-    Column('dish_id', Integer, ForeignKey('dishes.id'))
-)
+from app.models.order_dish import order_dish
+from app.db import Base
 
 class Dish(Base):
     __tablename__ = "dishes"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    description = Column(String)
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text)
     price = Column(Float, nullable=False)
-    category = Column(String, nullable=False)
-
-    orders = relationship("Order", secondary=order_dish_asssociation, back_populates="dishes")
+    category = Column(String(50), nullable=False)
+    
+    orders = relationship("Order", secondary="order_dish", back_populates="dishes")
